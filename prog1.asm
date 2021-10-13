@@ -26,9 +26,7 @@ BSIZE2 equ 256
 	momo dw 1234h
 	Buffer db ?	
 	NoRead db 256 dup (0)
-;	a db 10110101b
-;	b db 00110111b
-;	cc db 0
+
 .code
 start:
 	invoke AllocConsole ; запрашиваем у Windows консоль
@@ -38,14 +36,8 @@ start:
 	invoke GetStdHandle, STD_INPUT_HANDLE
 	mov stdin,eax
 	
-	NewLine:
+	NewLine:	
 
-;	invoke GetConsoleMode, GetStdHandle, ADDR Mode ; сохранение флагов
-;	mov eax, Mode
-;	and eax, 1111111111111001B ; сброс первого бита
-;	invoke SetConsoleMode, GetStdHandle, eax ; отмена режима Enter		
-
-	
 	invoke ReadConsole , stdin,ADDR buff_a, BSIZE, ADDR cRead, NULL
 	
 	invoke ReadConsoleInput , stdin, ADDR NoRead, BSIZE2, ADDR cRead2
