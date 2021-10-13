@@ -1,5 +1,3 @@
-; Новый проект masm32 успешно создан
-; Заполнен демо программой «Здравствуй, мир!»
 .386
 .model flat, stdcall
 option casemap :none
@@ -121,9 +119,7 @@ start:
 	xchg eax, rez
 	add rez, eax
 	inc cx	
-	
-;	invoke FlushConsoleInputBuffer, stdout
-;	invoke FreeConsole ; отключет консоль, помогает создание новой консоли
+
 	mov ecx, offset NoRead
 	invoke GetNumberOfConsoleInputEvents, stdin, ecx
 	inc ecx
@@ -136,13 +132,6 @@ start:
              ADDR NumberOfCharsRead,	; сюда функция запишет число символов
                                   0	; lpReserved передаем, как ноль
 	
-	
-;	not a ; инвертируем первое число и делим его на 4 
-;	shr a,2 
-;	shl b,1 ; второе число умножаем на 2 
-;	mov al , a ; полученные результаты складываем 
-;	add al , b 
-;	xor al, 00001111b ; меняем первые четыре разряда на противоположные
-;	mov cc,al 	
+		
 	exit
 end start
