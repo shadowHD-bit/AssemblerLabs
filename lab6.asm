@@ -60,6 +60,33 @@ start:
 		invoke ExitProcess, 0
 		
 
+	PROC_SEARCH_AND_REMOVE proc
+		
+		mov edi, esi ;коприрование в edi полученных строк
+		mov ebx, offset tempData
+		
+		@NumerationWriteLine:
+		mov al, numerationLine ;нумерация строки начало
+		add [ebx], al
+		inc ebx
+		
+		mov al, ") "
+		add [ebx], al
+		inc ebx
+		
+		mov al, 20h
+		add [ebx], al
+		inc ebx
+		
+		inc line 
+		
+		
+		
+
+
+	PROC_SEARCH_AND_REMOVE endp
+	
+	
 
 
 	PROC_STR_LENGHT proc  ;определение длины строки	
@@ -73,7 +100,7 @@ start:
 		PROC_STR_LENGHT endp
 
 	
-	PROC_SEARCH_AND_REMOVE proc
+
 		
 
 
