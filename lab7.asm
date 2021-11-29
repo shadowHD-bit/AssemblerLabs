@@ -1,206 +1,310 @@
+;ab + c/d + ef(g + h) + k/m
 
 .386
 .model flat, stdcall
 option casemap :none
+include includes\windows.inc
 include includes\masm32.inc
 include includes\kernel32.inc
 include includes\macros\macros.asm
 includelib includes\masm32.lib
 includelib includes\kernel32.lib
-include includes\msvcrt.inc
-includelib includes\msvcrt.lib
 
+
+BSIZE equ 10
 .data
-	text_entered_a db "Enter Number A: "
-	text_entered_b db "Enter Number B: "
-	text_entered_c db "Enter Number C: "
-	text_entered_d db "Enter Number D: "
-	text_entered_e db "Enter Number E: "
-	text_entered_f db "Enter Number F: "
-	text_entered_g db "Enter Number G: "
-	text_entered_h db "Enter Number H: "
-	text_entered_k db "Enter Number K: "
-	text_entered_m db "Enter Number M: "
+
+	rez dd 0 
+	mn_dec dd 10d
+	mn_div dw 10d
+	aa dd BSIZE dup (?) 
+	soob_1 db "A = ", 0
+	soob_2 db "B = ", 0
+	soob_3 db "C = ", 0
+	soob_4 db "D = ", 0
+	soob_5 db "E = ", 0
+	soob_6 db "F = ", 0
+	soob_7 db "G = ", 0
+	soob_8 db "H = ", 0
+	soob_9 db "K = ", 0
+	soob_10 db "M = ", 0
+	soob_res db "AB + C/D + EF(G + H) + K/M = "
+	soob_otst db 0ah, 0dh, 0
+	kol db 10
+	num dw 0
+	index dd 11
 	
-	text_zero db "0"
-	text_one db "1"
-	text_two db "2"
-	text_three db "3"
-	text_four db "4"
-	text_five db "5"
-	text_six db "6"
-	text_seven db "7"
-	text_eight db "8"
-	text_night db "9"
-	index dd 9
+	numberA dd 0
+	numberB dd 0
+	numberC dd 0
+	numberD dd 0
+	numberE dd 0
+	numberF dd 0
+	numberG dd 0
+	numberH dd 0
+	numberK dd 0
+	numberM dd 0
+	temp dd 0
+	stdout DWORD ? 
+	stdin DWORD ? 
+	
+	cdkey DWORD ? 
 
+	buffer_key_2 db 0A0h dup (0) 
+	
 .data?
-
-	STD_INPUT dd ?
-	STD_OUTPUT dd ?
-	INPUT_BUFFER dd ?
-	OUTPUT_BUFFER dd ?
-	bit_buffer dd ?
-
+	
+	buffer_key_1 db 0A0h dup (?) 
+		
 .code
 
+
 start:
+	invoke AllocConsole
+
+	invoke GetStdHandle, STD_INPUT_HANDLE 
+	mov stdin,eax 	
+	
+	invoke GetStdHandle, STD_OUTPUT_HANDLE 
+	mov stdout,eax 
+
+	xor eax, eax
+	
+	invoke WriteConsole, stdout, ADDR soob_1, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberA, ebx
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_2, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberB, ebx
+	inc di
+
+	invoke WriteConsole, stdout, ADDR soob_3, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberC, ebx
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_4, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberD, ebx
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_5, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberE, ebx
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_6, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberF, ebx
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_7, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberG, ebx
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_8, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberH, ebx
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_9, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0
+	mov ebx, rez
+	mov numberK, ebx 	
+	inc di
+	
+	invoke WriteConsole, stdout, ADDR soob_10, sizeof soob_1, 0, 0 
+	call PROC_VALID_ENTER_NUMBER
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	mov ebx, rez
+	mov numberM, ebx
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0
 
 
 
-	mov edx, 0
+;ab + c/d + ef(g + h) + k/m
+	;numA = AB
+	mov ebx, numberA
+	mov eax, numberB
+	mul ebx
+	mov numberA, eax
+	
+	xor eax,eax
+	xor ebx,ebx
+	xor edx,edx
+	
+	;numC = c/d
+	mov eax, numberC
+	mov ebx, numberD
+	idiv ebx
+	mov numberC, eax
 
-	invoke GetStdHandle, -10
-		mov STD_INPUT, eax
-	invoke GetStdHandle, -11
-		mov STD_OUTPUT, eax
-	invoke SetConsoleMode, STD_INPUT, 0
+	xor eax,eax
+	xor ebx,ebx
+	xor edx,edx
 	
-	@Main:
-		
+	;numE = ef
+	mov ebx, numberE
+	mov eax, numberF
+	mul ebx
+	mov numberE, eax
 	
-	call PROC_ENTER_TEXT	
-	call PROC_VALID_NUMBER
+	xor eax,eax
+	xor ebx,ebx
+	xor edx,edx
+	
+	;numG = g+h
+	mov eax, numberG
+	add eax, numberH
+	mov numberG, eax
+	
+	xor eax,eax
+	xor ebx,ebx
+	xor edx,edx
+	
+	;numK = k/m
+	mov eax, numberK
+	mov ebx, numberM
+	idiv ebx
+	mov numberK, eax
 
-
-PROC_ENTER_TEXT:
-	cmp index, 10
-	je vvoda
+	xor eax,eax
+	xor ebx,ebx
+	xor edx,edx
 	
-	cmp index, 9
-	je vvodb
+	;numE=ef(g+h)
+	mov ebx, numberE
+	mov eax, numberG
+	mul ebx
+	mov numberE, eax
 	
-	cmp index, 8
-	je vvodc
+	xor eax,eax
+	xor ebx,ebx
+	xor edx,edx
 	
-	cmp index, 7
-	je vvodd
+	;numA = ab + c/d + ef(g + h) + k/m
+	mov eax, numberA
+	add eax, numberC
+	add eax, numberE
+	add eax, numberK
 	
-	cmp index, 6
-	je vvode
-	
-	cmp index, 5
-	je vvodf
-	
-	cmp index, 4
-	je vvodg
-	
-	cmp index, 3
-	je vvodh
-	
-	cmp index, 2
-	je vvodk
-	
-	cmp index, 1
-	je vvodm
-	
-	vvoda:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_a, sizeof text_entered_a, addr OUTPUT_BUFFER, 0
-	vvodb:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_b, sizeof text_entered_b, addr OUTPUT_BUFFER, 0
-	vvodc:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_c, sizeof text_entered_c, addr OUTPUT_BUFFER, 0
-	vvodd:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_d, sizeof text_entered_d, addr OUTPUT_BUFFER, 0
-	vvode:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_e, sizeof text_entered_e, addr OUTPUT_BUFFER, 0
-	vvodf:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_f, sizeof text_entered_f, addr OUTPUT_BUFFER, 0
-	vvodg:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_g, sizeof text_entered_g, addr OUTPUT_BUFFER, 0
-	vvodh:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_h, sizeof text_entered_h, addr OUTPUT_BUFFER, 0
-	vvodk:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_k, sizeof text_entered_k, addr OUTPUT_BUFFER, 0
-	vvodm:
-	invoke WriteConsole, STD_OUTPUT, addr text_entered_m, sizeof text_entered_m, addr OUTPUT_BUFFER, 0
-	
-	
-	invoke ReadConsole, STD_INPUT, addr bit_buffer, 1, addr INPUT_BUFFER, 0
-		mov eax, bit_buffer	
-	
-
-PROC_VALID_NUMBER proc
-	
-@vvod:
-	cmp eax, 13
-		je @press_enter
-	
-	cmp eax, 30h
-		je @if_number_zero
+	call PROC_SAVE_RESULT
 				
-	cmp eax, 31h
-		je @if_number_one
-
-	cmp eax, 32h
-		je @if_number_two
-		
-	cmp eax, 33h
-		je @if_number_three
+	xor eax, eax
 	
-	cmp eax, 34h
-		je @if_number_four
-		
-	cmp eax, 35h
-		je @if_number_five
-		
-	cmp eax, 36h
-		je @if_number_six
-		
-	cmp eax, 37h
-		je @if_number_seven
-		
-	cmp eax, 38h
-		je @if_number_eight
 
-	cmp eax, 39h
-		je @if_number_night
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	
+	invoke WriteConsole, stdout, ADDR soob_res, sizeof soob_res, 0, 0 
+	invoke WriteConsole, stdout, ADDR buffer_key_2, 27d, 0, 0 ; вывод числа	
+	invoke WriteConsole, stdout, ADDR soob_otst, 2d, 0, 0 
+	
+	
+	
+	
+	
+PROC_VALID_ENTER_NUMBER proc
+	
+
+@1:
+		
+	invoke ReadConsoleInput, stdin, ADDR buffer_key_1, BSIZE, ADDR cdkey 
+	cmp [buffer_key_1+10d], 0dh 
+	je @2 
+	
+	cmp [buffer_key_1+14d], 0 
+	je @1
+	cmp [buffer_key_1+14d], 30h 
+	jl @1 
+	cmp [buffer_key_1+14d], 40h 
+	jnc @1  
+	
+	cmp [buffer_key_1+04d], 1h 
+	jne @1 
+	invoke WriteConsole, stdout, ADDR [buffer_key_1+14d], 1, 0, 0
+	
+	mov eax, temp 
+	mul mn_dec
+	mov temp, eax 
+	
+	xor eax, eax 
+	mov al, [buffer_key_1+14d] 
+	sub al, 30h 
+	add temp, eax 
+	
+	jmp @1 
+	
+	
+@2:	
+	invoke ReadConsoleInput, stdin, ADDR buffer_key_1, BSIZE, ADDR cdkey 
+	
+	xor edi, edi
+	mov di, num
+	mov eax, temp
+	mov temp, 0
+	mov [aa + edi*4], eax
+	mov rez, eax
+	xor eax, eax
+	ret	
+PROC_VALID_ENTER_NUMBER endp
 
 
-	@press_enter:
-		dec index
-		jmp @vvod
+PROC_SAVE_RESULT proc
 
-	@if_number_zero:
-		invoke WriteConsole, STD_OUTPUT, addr text_zero, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-		
-	@if_number_one:
-		invoke WriteConsole, STD_OUTPUT, addr text_one, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-		
-	@if_number_two:
-		invoke WriteConsole, STD_OUTPUT, addr text_two, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-		
-	@if_number_three:
-		invoke WriteConsole, STD_OUTPUT, addr text_three, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-		
-	@if_number_four:	
-		
-		invoke WriteConsole, STD_OUTPUT, addr text_four, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-	@if_number_five:	
-		invoke WriteConsole, STD_OUTPUT, addr text_five, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-		
-	@if_number_six:	
-		invoke WriteConsole, STD_OUTPUT, addr text_six, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-		
-	@if_number_seven:
-		invoke WriteConsole, STD_OUTPUT, addr text_seven, 1, addr OUTPUT_BUFFER, 0
-		jmp @vvod
-		
-	@if_number_eight:
-		invoke WriteConsole, STD_OUTPUT, addr text_eight, 1, addr OUTPUT_BUFFER, 0
-		jmp @Main
-		
-	@if_number_night:
-		invoke WriteConsole, STD_OUTPUT, addr text_night, 1, addr OUTPUT_BUFFER, 0
-		jmp @Main
-		
-PROC_VALID_NUMBER endp	
-
+	xor ecx, ecx ; подготовка счетчика - обнуление
+	xor edx, edx ; будет использоввн для приведения значения к размерности чисел
+@51:	
+	div mn_div 	; деление числа на 10, чтобы представить его в десятичной системе счиления
+				; будет браться остаток от деления и к нему прибавляться 30h, чтобы найти ASCII- код числа для вывода на экран
+				; при делении первый остаток от деления дает нам правую цифру, которая должна быть выведена поседней
+	add dl, 30h	; добавление 30h для нахождения кода числа (преобразвание в букву)
+	push edx	; временное сохранение в стеке всех чисел - чтобы их перевернуть - сделать парвильный порядок символов
+	xor edx, edx; обнуление edx, так как будет использовать у него только dl для записи только одной цифры
+	inc ecx		; увеличение счетчика - сколько цифр- столько раз будет увеличен счетчик
+	cmp eax, 0	; если делимое равно нулю (все остатки от деления найдены) то значить все цифры обработыны
+	jne @51		; переход на обработку следующей цифры, если в регистре еще есть значение
+				; если не равно, то переход
+	
+	mov edi, 0	; обнуление edi, который будет использоваться как счетчик для доступа к ячейкам
+				; памяти куда будут записаны символы выводимых цифр для числа
+@61:	
+	pop edx		; чтение ASCII-кода цифры из стека (читается сначала старший разряд, так как он был помещен последним в стек)
+	mov [buffer_key_2 + edi], dl ; по адресу буфера вывода сохраняем только один байт, соотвутствующий цифре
+	inc edi		; переходим к следующему байту
+	dec ecx		; уменьшаем счетчик-количество цифр в числе (был получен в предыдушщем цикле)
+	jnz @61		; пока не обработаны все цифры чистаем из стека следующую цифру и ложем в буфер
+				; пока не ноль - пока ecx больше нуля
+	
+ret
+PROC_SAVE_RESULT endp	
+	
+	
+	
+	
+	
+	
+	
+	
+exit	
+			 
 end start
